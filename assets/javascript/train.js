@@ -77,7 +77,7 @@ $(document).ready(function() {
 		$('#frequency').val("");
 	});
 
-	database.ref().on('value', function(snapshot) {
+	database.ref().on('child_added', function(snapshot) {
 		console.log(snapshot.val());
 		var trainNameData = $('<td>');
 		trainNameData.text(snapshot.val().trainName);
