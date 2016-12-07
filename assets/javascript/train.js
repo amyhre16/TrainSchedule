@@ -29,7 +29,7 @@ $(document).ready(function() {
 		firstTrain = moment(firstTrain, "hh:mm").subtract(1, "years");
 
 		// calculate the difference between the first time and the current time
-		var diffTime = moment().diff(moment(firstTrain), "minutes");
+		var diffTime = moment().diff(firstTrain, "minutes");
 
 		// find the time since the last train
 		var timeRemaining = diffTime % frequency;
@@ -40,35 +40,13 @@ $(document).ready(function() {
 		// create a moment object for the time the next train will arrive. The object is formatted to display as American time w/ AM/PM. For example, 00:00 will display as 12:00 AM
 		nextTrain = moment().add(minutesUntilNextTrain, "minutes").format("hh:mm A");
 
-		// create table data elements to display train data
-		/*var trainNameData = $('<td>');
-		trainNameData.text(trainName);
-
-		var destinationData = $('<td>');
-		destinationData.text(destination);
-
-		var frequencyData = $('<td>');
-		frequencyData.text(frequency);
-
-		var nextArrivalData = $('<td>');
-		nextArrivalData.text(nextTrain);
-
-		var minutesUntilNextTrainData = $('<td>');
-		minutesUntilNextTrainData.text(minutesUntilNextTrain);*/
-
 		database.ref().push({
 			trainName: trainName,
 			destination: destination,
 			frequency: frequency,
-			nextTrain,
+			nextTrain: nextTrain,
 			minutesUntilNextTrain: minutesUntilNextTrain
 		});
-		/*// create a new table row element and append all of the table data elements to it
-		var newTableRow = $('<tr>');
-		newTableRow.append(trainNameData).append(destinationData).append(frequencyData).append(nextArrivalData).append(minutesUntilNextTrainData);
-
-		// append the new row to the table
-		$('.table').append(newTableRow);*/
 
 		// empty the text boxes
 		$('#trainName').val("");
@@ -78,29 +56,49 @@ $(document).ready(function() {
 	});
 
 	database.ref().on('child_added', function(snapshot) {
-		console.log(snapshot.val());
-		var trainNameData = $('<td>');
+		// console.log(snapshot.val());
+		var trainNameData = $('<td class="trainName">');
 		trainNameData.text(snapshot.val().trainName);
 
-		var destinationData = $('<td>');
+		var destinationData = $('<td class="destination">');
 		destinationData.text(snapshot.val().destination);
 
-		var frequencyData = $('<td>');
+		var frequencyData = $('<td class="frequency">');
 		frequencyData.text(snapshot.val().frequency);
 
-		var nextArrivalData = $('<td>');
+		var nextArrivalData = $('<td class="nextTrain">');
 		nextArrivalData.text(snapshot.val().nextTrain);
 
-		var minutesUntilNextTrainData = $('<td>');
+		var minutesUntilNextTrainData = $('<td class="minutes-remaining">');
 		minutesUntilNextTrainData.text(snapshot.val().minutesUntilNextTrain);
 
 		// create a new table row element and append all of the table data elements to it
-		var newTableRow = $('<tr>');
+		var newTableRow = $('<tr class="train">');
 		newTableRow.append(trainNameData).append(destinationData).append(frequencyData).append(nextArrivalData).append(minutesUntilNextTrainData);
 
 		// append the new row to the table
-		$('.table').append(newTableRow);
+		$('.table').append(newTableRow);	
+		/*$('tr.train').each(function() {
+			console.log($(this).find('td.minutes-remaining').text());
+		});	
+		console.log("");*/
 	}, function(errorObject) {
 		console.log("Errors handled: " + errorObject.code);
 	});
+	//
+	var updateMinutes = setInterval(function() {
+		$('tr.train').each(function() {
+			var oldMinutes = $(this).find('td.minutes-remaining').text();
+			if (oldMinutes > 1) {
+				var newMinutes = oldMinutes - 1;
+				$(this).find('td.minutes-remaining').text(newMinutes);
+			}
+			else {
+				$(this).find('td.minutes-remaining').text($(this).find('td.frequency').text());
+				var oldTrainTime = $(this).find('td.nextTrain').text();
+				var newTrainTime = moment(oldTrainTime, "hh:mm A").add($(this).find('td.frequency').text(), "minutes").format("hh:mm A");
+				$(this).find('td.nextTrain').text(newTrainTime);
+			}
+		});
+	}, 60000);
 });
