@@ -56,7 +56,6 @@ $(document).ready(function() {
 	});
 
 	database.ref().on('child_added', function(snapshot) {
-		// console.log(snapshot.val());
 		var trainNameData = $('<td class="trainName">');
 		trainNameData.text(snapshot.val().trainName);
 
@@ -78,13 +77,10 @@ $(document).ready(function() {
 
 		// append the new row to the table
 		$('.table').append(newTableRow);	
-		/*$('tr.train').each(function() {
-			console.log($(this).find('td.minutes-remaining').text());
-		});	
-		console.log("");*/
 	}, function(errorObject) {
 		console.log("Errors handled: " + errorObject.code);
 	});
+
 	//
 	var updateMinutes = setInterval(function() {
 		$('tr.train').each(function() {
