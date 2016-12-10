@@ -9,8 +9,10 @@ $(document).ready(function() {
 	};
 	firebase.initializeApp(config);
 
+	// create a variable that references the firebase database
 	var database = firebase.database();
 
+	// initialize variables for the database
 	var trainName;
 	var destination;
 	var firstTrain;
@@ -40,6 +42,7 @@ $(document).ready(function() {
 		// create a moment object for the time the next train will arrive. The object is formatted to display as American time w/ AM/PM. For example, 00:00 will display as 12:00 AM
 		nextTrain = moment().add(minutesUntilNextTrain, "minutes").format("hh:mm A");
 
+		// push a new child object to the database
 		database.ref().push({
 			trainName: trainName,
 			destination: destination,
@@ -53,9 +56,16 @@ $(document).ready(function() {
 		$('#destination').val("");
 		$('#firstTrainTime').val("");
 		$('#frequency').val("");
-	});
+	}); // end of .btn on click event listener
 
+	/*
+		event listener that runs when a child object has been added to the database
+	*/
 	database.ref().on('child_added', function(snapshot) {
+		/*
+			variables w/ data in are what will be added to the data table
+			snapshot.val() gets the object, to access its properties, call the property name after .val()
+		*/
 		var trainNameData = $('<td class="trainName">');
 		trainNameData.text(snapshot.val().trainName);
 
@@ -79,16 +89,28 @@ $(document).ready(function() {
 		$('.table').append(newTableRow);	
 	}, function(errorObject) {
 		console.log("Errors handled: " + errorObject.code);
-	});
+	}); // end of 'child_added' event listener
 
-	//
+	// this interval updates the minutes until the next train and the time the next train will arrive every minute
 	var updateMinutes = setInterval(function() {
+		// selects each table row with data in it and runs the function on each element
 		$('tr.train').each(function() {
+			/*
+				grabs the minutes cell and assigns it to oldMinutes
+				if there's more than a minute left,
+					just decrement the minutes and display it in the table
+			*/
 			var oldMinutes = $(this).find('td.minutes-remaining').text();
 			if (oldMinutes > 1) {
 				var newMinutes = oldMinutes - 1;
 				$(this).find('td.minutes-remaining').text(newMinutes);
 			}
+			/*
+				if there is 1 minute left, then we don't need to decrement it b/c we don't want to display 0 minutes
+					instead, we
+						just display the frequency in the minutes away column
+						add the frequency to the old time and display the new time
+			*/
 			else {
 				$(this).find('td.minutes-remaining').text($(this).find('td.frequency').text());
 				var oldTrainTime = $(this).find('td.nextTrain').text();
@@ -96,5 +118,5 @@ $(document).ready(function() {
 				$(this).find('td.nextTrain').text(newTrainTime);
 			}
 		});
-	}, 60000);
+	}, 60000); // end of the interval
 });
