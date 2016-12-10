@@ -27,35 +27,46 @@ $(document).ready(function() {
 		firstTrain = $('#firstTrainTime').val().trim();
 		frequency = $('#frequency').val().trim();
 
-		// push the time of the first train back 1 year to make sure it comes before current time
-		firstTrain = moment(firstTrain, "hh:mm").subtract(1, "years");
+		// only do stuff if the user filled in all of the text fields
+		if (trainName != "" && destination != "" && firstTrain != "" &&  frequency != "") {
+			// push the time of the first train back 1 year to make sure it comes before current time
+			firstTrain = moment(firstTrain, "hh:mm").subtract(1, "years");
 
-		// calculate the difference between the first time and the current time
-		var diffTime = moment().diff(firstTrain, "minutes");
+			// calculate the difference between the first time and the current time
+			var diffTime = moment().diff(firstTrain, "minutes");
 
-		// find the time since the last train
-		var timeRemaining = diffTime % frequency;
+			// find the time since the last train
+			var timeRemaining = diffTime % frequency;
 
-		// calculate the minutes left until the next train
-		minutesUntilNextTrain = frequency - timeRemaining;
+			// calculate the minutes left until the next train
+			minutesUntilNextTrain = frequency - timeRemaining;
 
-		// create a moment object for the time the next train will arrive. The object is formatted to display as American time w/ AM/PM. For example, 00:00 will display as 12:00 AM
-		nextTrain = moment().add(minutesUntilNextTrain, "minutes").format("hh:mm A");
+			// create a moment object for the time the next train will arrive. The object is formatted to display as American time w/ AM/PM. For example, 00:00 will display as 12:00 AM
+			nextTrain = moment().add(minutesUntilNextTrain, "minutes").format("hh:mm A");
 
-		// push a new child object to the database
-		database.ref().push({
-			trainName: trainName,
-			destination: destination,
-			frequency: frequency,
-			nextTrain: nextTrain,
-			minutesUntilNextTrain: minutesUntilNextTrain
-		});
+			// push a new child object to the database
+			database.ref().push({
+				trainName: trainName,
+				destination: destination,
+				frequency: frequency,
+				nextTrain: nextTrain,
+				minutesUntilNextTrain: minutesUntilNextTrain
+			});
 
-		// empty the text boxes
-		$('#trainName').val("");
-		$('#destination').val("");
-		$('#firstTrainTime').val("");
-		$('#frequency').val("");
+			// empty the text boxes
+			$('#trainName').val("");
+			$('#destination').val("");
+			$('#firstTrainTime').val("");
+			$('#frequency').val("");
+
+			// console a success message
+			console.log("%cYour train has been successfully added!", "color: green;")
+		} // end of if statement
+
+		// if any of the text fields are empty, console an error message
+		else {
+			console.log("%cYou forgot to enter another train", "color: red;");
+		}
 	}); // end of .btn on click event listener
 
 	/*
